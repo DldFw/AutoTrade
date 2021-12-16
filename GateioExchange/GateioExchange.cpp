@@ -98,15 +98,16 @@ void GateioExchange::send_to_market(const exc_trade::Trade &trade_data) {
     be_sign_data+="&amount=";
     be_sign_data+=std::to_string(trade_data.trade_number);
 
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
-    HMAC_Init_ex(&ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_sha512(), NULL);
-    HMAC_Update(&ctx, (unsigned char*)(be_sign_data.c_str()), be_sign_data.size());
+    //HMAC_CTX *ctx = nullptr;
+    HMAC_CTX *ctx = HMAC_CTX_new();
+    //HMAC_CTX_init(&ctx);
+    HMAC_Init_ex(ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_sha512(), NULL);
+    HMAC_Update(ctx, (unsigned char*)(be_sign_data.c_str()), be_sign_data.size());
     unsigned char* pEncode_buffer = new unsigned char[EVP_MAX_MD_SIZE];
     uint32_t buffer_length=0;
-    HMAC_Final(&ctx, pEncode_buffer, &buffer_length);
-    HMAC_CTX_cleanup(&ctx);
-
+    HMAC_Final(ctx, pEncode_buffer, &buffer_length);
+   // HMAC_CTX_cleanup(&ctx);
+    HMAC_CTX_get_md(ctx);
     //encode to degist
     char buf[129];
     for (int i=0; i<64; i++)
@@ -140,15 +141,16 @@ double GateioExchange::print_balance(const std::string symbol) {
     //1 给交易签名 SHA512 格式：key=value&key=value&key=value
     std::string be_sign_data="";
     //2 签名过程
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
-    HMAC_Init_ex(&ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_sha512(), NULL);
-    HMAC_Update(&ctx, (unsigned char*)(be_sign_data.c_str()), be_sign_data.size());
+    HMAC_CTX* ctx = HMAC_CTX_new();
+    //HMAC_CTX_init(&ctx);
+    HMAC_Init_ex(ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_sha512(), NULL);
+    HMAC_Update(ctx, (unsigned char*)(be_sign_data.c_str()), be_sign_data.size());
     unsigned char* pEncode_buffer = new unsigned char[EVP_MAX_MD_SIZE];
     uint32_t buffer_length=0;
-    HMAC_Final(&ctx, pEncode_buffer, &buffer_length);
-    HMAC_CTX_cleanup(&ctx);
+    HMAC_Final(ctx, pEncode_buffer, &buffer_length);
+    //HMAC_CTX_cleanup(&ctx);
 
+    HMAC_CTX_get_md(ctx);
     //encode to degist
     char buf[129];
     for (int i=0; i<64; i++)

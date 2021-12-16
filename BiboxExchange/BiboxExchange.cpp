@@ -110,15 +110,17 @@ void BiboxExchange::send_to_market(const exc_trade::Trade &trade_data) {
 
     auto cmd_str_data="["+cmd_data.serialize();
     cmd_str_data=cmd_str_data+"]";
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
-    HMAC_Init_ex(&ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_md5(), NULL);
-    HMAC_Update(&ctx, (unsigned char*)(cmd_str_data.c_str()), cmd_str_data.size());
+    HMAC_CTX* ctx = nullptr;
+    ctx = HMAC_CTX_new();
+    //HMAC_CTX_init(&ctx);
+    HMAC_Init_ex(ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_md5(), NULL);
+    HMAC_Update(ctx, (unsigned char*)(cmd_str_data.c_str()), cmd_str_data.size());
     unsigned char* pEncode_buffer = new unsigned char[EVP_MAX_MD_SIZE];
     uint32_t buffer_length=0;
-    HMAC_Final(&ctx, pEncode_buffer, &buffer_length);
-    HMAC_CTX_cleanup(&ctx);
+    HMAC_Final(ctx, pEncode_buffer, &buffer_length);
+    //HMAC_CTX_cleanup(&ctx);
 
+    HMAC_CTX_get_md(ctx);
     //std::cout<<pEncode_buffer<<std::endl;
     //encode to degist
     char buf[33];
@@ -168,14 +170,15 @@ double BiboxExchange::print_balance(const std::string symbol) {
     cmd_str_data=cmd_str_data+"]";
 
 
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
-    HMAC_Init_ex(&ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_md5(), NULL);
-    HMAC_Update(&ctx, (unsigned char*)(cmd_str_data.c_str()), cmd_str_data.size());
+    HMAC_CTX* ctx = HMAC_CTX_new();
+    //HMAC_CTX_init(ctx);
+    HMAC_Init_ex(ctx, Secret_Key.c_str(), strlen(Secret_Key.c_str()), EVP_md5(), NULL);
+    HMAC_Update(ctx, (unsigned char*)(cmd_str_data.c_str()), cmd_str_data.size());
     unsigned char* pEncode_buffer = new unsigned char[EVP_MAX_MD_SIZE];
     uint32_t buffer_length=0;
-    HMAC_Final(&ctx, pEncode_buffer, &buffer_length);
-    HMAC_CTX_cleanup(&ctx);
+    HMAC_Final(ctx, pEncode_buffer, &buffer_length);
+    //HMAC_CTX_cleanup(&ctx);
+    HMAC_CTX_get_md(ctx);
 
     //std::cout<<pEncode_buffer<<std::endl;
     //encode to degist
